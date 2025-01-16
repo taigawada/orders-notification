@@ -50,9 +50,15 @@ fastify.addHook("preHandler", (request, reply, next) => {
       .digest("base64");
     if (hmac === hash) {
       return next();
+    } else {
+      return reply.code(500).send();
     }
   }
-  reply.code(500).send();
+  return next();
+});
+
+fastify.get("/ping", async (_request, _reply) => {
+  return "pong\n";
 });
 
 type Topics = "ORDERS_CREATE" | "APP_UNINSTALLED";
