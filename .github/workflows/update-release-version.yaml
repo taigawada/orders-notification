@@ -1,0 +1,67 @@
+name: Auto Versioning
+on:
+  pull_request:
+    branches:
+      - staging
+    types:
+      - labeled
+      - unlabeled
+jobs:
+  check_release_label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output error if label is missing
+        if: |
+          ! contains(github.event.pull_request.labels.*.name, 'release:patch') &&
+          ! contains(github.event.pull_request.labels.*.name, 'release:minor') &&
+          ! contains(github.event.pull_request.labels.*.name, 'release:major')
+        run: |
+          echo "::error::release label is missing. labels: `release:patch`, `release:minor`, `release:major`"
+          exit 1
+  version_diff:
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'release:patch') ||
+      contains(github.event.pull_request.labels.*.name, 'release:minor') ||
+      contains(github.event.pull_request.labels.*.name, 'release:major')
+    runs-on: ubuntu-latest
+    outputs:
+      chagned: ${{ steps.get_diff.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: git fetch origin ${{ github.base_ref }} --depth=1
+      - name: Retain version changes
+        id: get_diff
+        run: echo "changed=$(git diff origin/${{ github.base_ref }} HEAD --relative "./package.json" | grep "^.\version" | wc -l)" >> $GITHUB_OUTPUT
+  update_version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs: [version_diff]
+    if: needs.version_diff.outputs.chagned == '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18.x"
+      - name: Git settings
+        if: needs.version_diff.outputs.chagned == '0'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: cat package.json
+      - name: Version update (patch)
+        if: contains(github.event.pull_request.labels.*.name, 'release:patch')
+        run: npm --no-git-tag-version version patch
+      - name: Version update (minor)
+        if: contains(github.event.pull_request.labels.*.name, 'release:minor')
+        run: npm --no-git-tag-version version minor
+      - name: Version update (major)
+        if: contains(github.event.pull_request.labels.*.name, 'release:major')
+        run: npm --no-git-tag-version version major
+      - run: cat package.json
+      - uses: stefanzweifel/git-auto-commit-action@v5

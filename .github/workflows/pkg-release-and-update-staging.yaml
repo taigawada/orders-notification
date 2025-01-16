@@ -1,0 +1,110 @@
+name: Package Release And Update Staging
+on:
+  push:
+    branches:
+      - staging
+    tags:
+      - v*
+env:
+  IMAGE_NAME: orders-notification
+  DOCKER_BUILDKIT: 0
+  COMPOSE_DOCKER_CLI_BUILD: 0
+jobs:
+  prepare:
+    name: Prepare
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+      - name: Get Package Version
+        id: version
+        run: |
+          echo "VERSION=`npx -c 'echo "$npm_package_version"'`" >> $GITHUB_OUTPUT
+      - name: Get lowercase GitHub username
+        id: repository_owner
+        uses: ASzc/change-string-case-action@v6
+        with:
+          string: ${{ github.repository_owner }}
+      - name: Set image
+        id: image
+        run: |
+          echo 'image=ghcr.io/${{ steps.repository_owner.outputs.lowercase }}/${{ env.IMAGE_NAME }}' >> $GITHUB_OUTPUT
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ steps.image.outputs.image }}
+          tags: |
+            latest
+            type=pep440,pattern={{version}},value=${{ steps.version.outputs.VERSION }}
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+      meta-version: ${{ steps.meta.outputs.version }}
+      meta-labels: ${{ steps.meta.outputs.labels }}
+      meta-json: ${{ steps.meta.outputs.json }}
+  build_and_push:
+    name: Build and Push
+    runs-on: ubuntu-latest
+    needs: prepare
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Platform Regex
+        id: platform-regex
+        run: |
+          platform=linux/arm64
+          echo "PLATFORM_REGEX=${platform//\//-}" >> $GITHUB_OUTPUT
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/arm64
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: For app build and push
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          provenance: false
+          file: Dockerfile
+          platforms: linux/arm64
+          build-args: |
+            GITHUB_PACKAGE_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          tags: |
+            ${{ needs.prepare.outputs.image }}:${{ needs.prepare.outputs.meta-version }}
+            ${{ needs.prepare.outputs.image }}:latest
+  pull_and_serve:
+    name: Pull and Serve
+    runs-on: self-hosted
+    needs:
+      - prepare
+      - build_and_push
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Pull Image And Serve
+        run: |
+          image=${{ needs.prepare.outputs.image }}
+          container=`docker ps -aqf ancestor=$image`
+          if [ -n $container ]; then
+            exit 1
+          fi
+          #docker pull $image
+          echo $container updated
+          #docker start $container
+          echo $container started
+          docker system prune -f -a
