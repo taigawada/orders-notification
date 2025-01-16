@@ -1,0 +1,26 @@
+{
+  "name": "shopify_order_notification",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "author": "Taiga Wada",
+  "license": "MIT",
+  "scripts": {
+    "dev": "tsx --watch index.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/lodash": "^4.17.14",
+    "dotenv": "^16.4.7",
+    "eslint": "^9.17.0",
+    "globals": "^15.14.0",
+    "prettier": "^3.4.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.19.1"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.3",
+    "fastify": "^5.2.1",
+    "lodash": "^4.17.21"
+  }
+}
