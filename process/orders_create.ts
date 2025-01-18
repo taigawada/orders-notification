@@ -12,7 +12,7 @@ export async function ordersCreateProcess(payload: OrdersCreate) {
   // LineItem Sample
   // { name: "・単独衣装チェキ ×8", value: "あみな/なし", inline: false }
   const lineItems = payload.line_items.map((lineItem) => ({
-    name: `${lineItem.name} \u00d7 ${lineItem.quantity}`,
+    name: `${lineItem.title} \u00d7 ${lineItem.quantity}`,
     value: `${lineItem.variant_title ? lineItem.variant_title : "\n"}`,
     inline: false,
   }));
@@ -23,7 +23,7 @@ export async function ordersCreateProcess(payload: OrdersCreate) {
     .setTitle(
       `オンラインストアから${lineItems.length}アイテムの新しい注文がありました`,
     )
-    .setDescription(`**お客様**\n${nickName}\n${realName}\n`)
+    .setDescription(`**${nickName}**\n${realName}\n`)
     .addFields(...lineItems)
     .setFooter({ text: `合計金額は${amount}円です` })
     .setTimestamp();
