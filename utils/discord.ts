@@ -1,4 +1,4 @@
-import { Client, Collection, GatewayIntentBits } from "discord.js";
+import { Client, Collection, Events, GatewayIntentBits } from "discord.js";
 import fs from "fs/promises";
 import path from "path";
 import "dotenv/config";
@@ -27,7 +27,7 @@ export default discord;
 export async function loginDiscord(client: Client) {
   client.commands = new Collection();
 
-  const foldersPath = path.join(__dirname, "commands");
+  const foldersPath = path.join(path.dirname(__dirname), "commands");
   const commandFolders = await fs.readdir(foldersPath);
 
   for (const folder of commandFolders) {
@@ -39,7 +39,7 @@ export async function loginDiscord(client: Client) {
       const filePath = path.join(commandsPath, file);
       const command = await import(filePath);
       if (command.data && command.execute) {
-        client.commands.set(command.data.name, command.execute);
+        client.commands.set(command.data.name, command);
       } else {
         console.log(
           `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`,
@@ -47,6 +47,29 @@ export async function loginDiscord(client: Client) {
       }
     }
   }
+
+  client.on(Events.InteractionCreate, async (interaction) => {
+    if (interaction.isAutocomplete() || interaction.isCommand()) {
+      const command = interaction.client.commands.get(interaction.commandName);
+      if (!command) {
+        console.error(
+          `No command matching ${interaction.commandName} was found.`,
+        );
+        return;
+      }
+      try {
+        if (interaction.isCommand()) {
+          await command.execute(interaction);
+        } else if (interaction.isAutocomplete()) {
+          await command.autocomplete(interaction);
+        } else {
+          console.log("unknown interaction");
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  });
 
   await client.login(process.env.DISCORD_TOKEN);
   console.log("login to discord!");

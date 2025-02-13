@@ -2,8 +2,8 @@ import "dotenv/config";
 import Fastify, { FastifyInstance, FastifyRequest } from "fastify";
 import crypto from "crypto";
 import { isObject, isString } from "lodash";
-import { OrdersCreate } from "./@types/payload";
-import { ordersCreateProcess } from "./process/orders_create";
+import { OrdersCreate } from "../@types/payload";
+import { ordersCreateProcess } from "../process/orders_create";
 
 const fastify: FastifyInstance = Fastify({
   logger: false,
@@ -97,7 +97,7 @@ const parseWebhook = <T extends Topics>(topic: T, request: FastifyRequest) => {
 
 fastify.post("/api/webhooks/ordersCreate", async (request, reply) => {
   const { payload } = parseWebhook("ORDERS_CREATE", request);
-  console.log("now processing...");
+  console.log(`now processing... ${payload.name}`);
   ordersCreateProcess(payload);
   reply.code(200).send();
   return;

@@ -1,10 +1,21 @@
 import { BaseGuildTextChannel, EmbedBuilder } from "discord.js";
 import { OrdersCreate } from "../@types/payload";
-import discord from "../discord";
+import discord from "../utils/discord";
+import prisma from "../utils/prisma";
 
-export async function ordersCreateProcess(payload: OrdersCreate) {
+export async function createTodaySales(payload: OrdersCreate) {
+  await prisma.todaySales.createMany({
+    data: payload.line_items.map((lineItem) => ({
+      orderId: payload.admin_graphql_api_id,
+      variantId: `gid://shopify/ProductVariant/${lineItem.variant_id}`,
+      quantity: lineItem.current_quantity,
+    })),
+  });
+}
+
+export async function sendOrder(payload: OrdersCreate) {
   const channel: BaseGuildTextChannel = discord.channels.cache.get(
-    "1305201158884692079",
+    process.env.DISCORD_CHANNEL_ID!,
   ) as BaseGuildTextChannel;
 
   const nickName = payload.shipping_address.company;
@@ -28,4 +39,8 @@ export async function ordersCreateProcess(payload: OrdersCreate) {
     .setFooter({ text: `合計金額は${amount}円です` })
     .setTimestamp();
   await channel.send({ embeds: [embed] });
+}
+
+export async function ordersCreateProcess(payload: OrdersCreate) {
+  await Promise.all([sendOrder(payload), createTodaySales(payload)]);
 }
