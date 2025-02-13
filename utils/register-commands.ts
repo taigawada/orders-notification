@@ -12,8 +12,8 @@ async function registerCommands() {
   for (const folder of commandFolders) {
     // Grab all the command files from the commands directory you created earlier
     const commandsPath = path.join(foldersPath, folder);
-    const commandFiles = (await fs.readdir(commandsPath)).filter((file) =>
-      file.endsWith(".ts"),
+    const commandFiles = (await fs.readdir(commandsPath)).filter(
+      (file) => file.endsWith(".ts") || file.endsWith("js"),
     );
     // Grab the SlashCommandBuilder#toJSON() output of each command's data for deployment
     for (const file of commandFiles) {
