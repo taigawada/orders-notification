@@ -8,7 +8,7 @@
     "dev": "tsx --watch app/index.ts",
     "build": "tsc",
     "prisma": "prisma generate",
-    "start": "NODE_ENV=production node build/index.js",
+    "start": "NODE_ENV=production node build/app/index.js",
     "codegen": "graphql-codegen --config graphql-codegen/codegen.ts",
     "register": "tsx register-commands.ts",
     "test": "jest"
