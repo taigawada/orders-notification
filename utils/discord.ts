@@ -32,8 +32,8 @@ export async function loginDiscord(client: Client) {
 
   for (const folder of commandFolders) {
     const commandsPath = path.join(foldersPath, folder);
-    const commandFiles = (await fs.readdir(commandsPath)).filter((file) =>
-      file.endsWith(".ts"),
+    const commandFiles = (await fs.readdir(commandsPath)).filter(
+      (file) => file.endsWith(".ts") || file.endsWith("js"),
     );
     for (const file of commandFiles) {
       const filePath = path.join(commandsPath, file);
