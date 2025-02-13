@@ -6,7 +6,7 @@ import path from "path";
 async function registerCommands() {
   const commands: string[] = [];
   // Grab all the command folders from the commands directory you created earlier
-  const foldersPath = path.join(__dirname, "commands");
+  const foldersPath = path.join(process.cwd(), "commands");
   const commandFolders = await fs.readdir(foldersPath);
 
   for (const folder of commandFolders) {
