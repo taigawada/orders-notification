@@ -13,7 +13,8 @@ RUN yarn install --immutable
 
 COPY . .
 
-RUN yarn run build
+RUN yarn build
+RUN yarn prisma
 
 FROM node:20-alpine AS runtime
 

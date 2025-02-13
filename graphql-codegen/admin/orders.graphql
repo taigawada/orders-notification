@@ -1,0 +1,47 @@
+mutation startBulkOperation($query: String!) {
+  bulkOperationRunQuery(query: $query) {
+    bulkOperation {
+      id
+      status
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}
+
+query getBulkOperationById($input: ID!) {
+  node(id: $input) {
+    ... on BulkOperation {
+      __typename
+      id
+      status
+      errorCode
+      createdAt
+      completedAt
+      objectCount
+      fileSize
+      url
+      partialDataUrl
+    }
+  }
+}
+
+query getOrdersCount($query: String) {
+  ordersCount(limit: 10000, query: $query) {
+    count
+    precision
+  }
+}
+
+query getOrdersByQuery($query: String) {
+  orders(first: 250, query: $query, sortKey: CREATED_AT) {
+    edges {
+      node {
+        id
+        name
+      }
+    }
+  }
+}

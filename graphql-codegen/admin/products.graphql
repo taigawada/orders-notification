@@ -1,0 +1,22 @@
+query getProductsByWords($input: String!) {
+  products(first: 25, query: $input) {
+    edges {
+      node {
+        id
+        title
+        totalInventory
+      }
+    }
+  }
+}
+
+query getVariantsByProduct($input: String!) {
+  productVariants(first: 25, query: $input) {
+    edges {
+      node {
+        id
+        title
+      }
+    }
+  }
+}
