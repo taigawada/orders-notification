@@ -286,7 +286,7 @@ export async function batch() {
   const today = startOfDay(now);
   const yesterday = sub(today, { days: 1 });
 
-  console.log(`[${now.toDateString()}] batch process started`);
+  console.log(`[${now}] batch process started`);
 
   const url = await getAllOrders();
   const orders = await parseOrdersJsonL(url);
