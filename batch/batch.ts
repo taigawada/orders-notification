@@ -97,10 +97,10 @@ async function parseOrdersJsonL(jsonlUrl: string) {
 
 const gqlClient = new Graphql().admin;
 
-export async function getAllOrders() {
+export async function getAllOrders(today: Date) {
   const query = `
   {
-    orders(sortKey:ORDER_NUMBER, reverse:true) {
+    orders(query: "created_at:<='${today.toISOString()}'" sortKey:ORDER_NUMBER, reverse:true) {
       edges {
         node {
           __typename
@@ -288,7 +288,7 @@ export async function batch() {
 
   console.log(`[${now}] batch process started`);
 
-  const url = await getAllOrders();
+  const url = await getAllOrders(today);
   const orders = await parseOrdersJsonL(url);
   await createTotalSales(orders);
   const countEqual = await ordersCountCheck(today, yesterday);
