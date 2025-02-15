@@ -18,6 +18,11 @@ RUN yarn prisma
 
 FROM node:20-bullseye-slim
 
+RUN rm /var/lib/dpkg/info/libc-bin.*
+    && apt-get clean
+    && apt-get update
+    && apt-get install libc-bin
+
 RUN apt-get update && apt-get upgrade -y openssl \
     && apt-get install -y libsqlite3-dev sqlite3 \
     && apt-get clean \
