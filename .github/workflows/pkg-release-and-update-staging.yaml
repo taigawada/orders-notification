@@ -83,6 +83,8 @@ jobs:
           tags: |
             ${{ needs.prepare.outputs.image }}:${{ needs.prepare.outputs.meta-version }}
             ${{ needs.prepare.outputs.image }}:latest
+          cache-from: type=registry,ref=${{ needs.prepare.outputs.image }}:${{ needs.prepare.outputs.meta-version }}-cache
+          cache-to: type=registry,ref=${{ needs.prepare.outputs.image }}:${{ needs.prepare.outputs.meta-version }}-cache,mode=max
   pull_and_serve:
     name: Pull and Serve
     runs-on: self-hosted
