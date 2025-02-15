@@ -16,8 +16,8 @@ COPY . .
 RUN yarn build
 RUN yarn prisma
 
-FROM node:20-alpine AS runtime
-
+FROM gcr.io/distroless/nodejs20-debian12
+ENV NODE_ENV production
 WORKDIR /root
 
 COPY --from=builder ./app/.yarnrc.yml ./.yarnrc.yml
