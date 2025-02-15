@@ -27,4 +27,4 @@ COPY --from=builder ./app/yarn.lock ./yarn.lock
 COPY --from=builder ./app/node_modules ./node_modules
 COPY --from=builder ./app/prisma ./prisma
 
-CMD ["node", "build/app/index.js"]
+CMD ["build/app/index.js"]
