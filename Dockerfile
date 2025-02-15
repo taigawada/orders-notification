@@ -16,7 +16,7 @@ COPY . .
 RUN yarn build
 RUN yarn prisma
 
-FROM gcr.io/distroless/nodejs20-debian12:debug
+FROM node:20-alpine
 
 WORKDIR /root
 ENV NODE_ENV production
