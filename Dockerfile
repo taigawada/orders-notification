@@ -34,5 +34,5 @@ COPY --from=builder ./app/prisma ./prisma
 
 RUN npx prisma generate
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/root/entrypoint.sh"]
 CMD ["npm", "start"]
