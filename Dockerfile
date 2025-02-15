@@ -16,7 +16,7 @@ COPY . .
 RUN yarn build
 RUN yarn prisma
 
-FROM node:20-alpine
+FROM node:20-bullseye-slim
 
 WORKDIR /root
 ENV NODE_ENV production
@@ -27,4 +27,4 @@ COPY --from=builder ./app/yarn.lock ./yarn.lock
 COPY --from=builder ./app/node_modules ./node_modules
 COPY --from=builder ./app/prisma ./prisma
 
-CMD ["build/app/index.js"]
+CMD ["npm", "start"]
