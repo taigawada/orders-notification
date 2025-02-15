@@ -18,6 +18,10 @@ RUN yarn prisma
 
 FROM node:20-bullseye-slim
 
+RUN apt-get update && apt-get upgrade openssl livsqlite3-dev sqlite3 -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /root
 ENV NODE_ENV production
 COPY --from=builder ./app/.yarnrc.yml ./.yarnrc.yml
