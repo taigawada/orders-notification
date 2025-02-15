@@ -18,7 +18,8 @@ RUN yarn prisma
 
 FROM node:20-bullseye-slim
 
-RUN apt-get update && apt-get upgrade openssl libsqlite3-dev sqlite3 -y \
+RUN apt-get update && apt-get upgrade -y openssl \
+    && apt-get install -y libsqlite3-dev sqlite3 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
