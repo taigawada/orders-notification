@@ -100,13 +100,5 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull Image And Serve
         run: |
-          image=${{ needs.prepare.outputs.image }}
-          container=`docker ps -aqf ancestor=$image`
-          if [ -n $container ]; then
-            exit 1
-          fi
-          #docker pull $image
-          echo $container updated
-          #docker start $container
-          echo $container started
-          docker system prune -f -a
+          cd $HOST_PWD
+          github-actions.sh
