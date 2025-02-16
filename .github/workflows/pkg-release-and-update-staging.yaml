@@ -83,6 +83,8 @@ jobs:
           tags: |
             ${{ needs.prepare.outputs.image }}:${{ needs.prepare.outputs.meta-version }}
             ${{ needs.prepare.outputs.image }}:latest
+          cache-from: type=registry,ref=${{ needs.prepare.outputs.image }}:${{ needs.prepare.outputs.meta-version }}-cache
+          cache-to: type=registry,ref=${{ needs.prepare.outputs.image }}:${{ needs.prepare.outputs.meta-version }}-cache,mode=max
   pull_and_serve:
     name: Pull and Serve
     runs-on: self-hosted
@@ -98,13 +100,5 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull Image And Serve
         run: |
-          image=${{ needs.prepare.outputs.image }}
-          container=`docker ps -aqf ancestor=$image`
-          if [ -n $container ]; then
-            exit 1
-          fi
-          #docker pull $image
-          echo $container updated
-          #docker start $container
-          echo $container started
-          docker system prune -f -a
+          cd $HOST_PWD
+          github-actions.sh

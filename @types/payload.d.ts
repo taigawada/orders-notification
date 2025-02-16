@@ -321,9 +321,9 @@ export interface Customer {
   multipass_identifier: any;
   tax_exempt: boolean;
   phone: any;
-  email_marketing_consent: EmailMarketingConsent;
-  sms_marketing_consent: any;
-  tags: string;
+  email_marketing_consent?: EmailMarketingConsent;
+  sms_marketing_consent?: any;
+  tags?: string;
   currency: string;
   tax_exemptions: any[];
   admin_graphql_api_id: string;

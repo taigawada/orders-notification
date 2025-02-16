@@ -2,8 +2,8 @@ import "dotenv/config";
 import Fastify, { FastifyInstance, FastifyRequest } from "fastify";
 import crypto from "crypto";
 import { isObject, isString } from "lodash";
-import { OrdersCreate } from "./@types/payload";
-import { ordersCreateProcess } from "./process/orders_create";
+import { OrdersCreate } from "../@types/payload";
+import { ordersCreateProcess } from "../process/orders_create";
 
 const fastify: FastifyInstance = Fastify({
   logger: false,
@@ -50,9 +50,15 @@ fastify.addHook("preHandler", (request, reply, next) => {
       .digest("base64");
     if (hmac === hash) {
       return next();
+    } else {
+      return reply.code(500).send();
     }
   }
-  reply.code(500).send();
+  return next();
+});
+
+fastify.get("/ping", async (_request, _reply) => {
+  return "pong\n";
 });
 
 type Topics = "ORDERS_CREATE" | "APP_UNINSTALLED";
@@ -91,7 +97,7 @@ const parseWebhook = <T extends Topics>(topic: T, request: FastifyRequest) => {
 
 fastify.post("/api/webhooks/ordersCreate", async (request, reply) => {
   const { payload } = parseWebhook("ORDERS_CREATE", request);
-  console.log("now processing...");
+  console.log(`now processing... ${payload.name}`);
   ordersCreateProcess(payload);
   reply.code(200).send();
   return;
@@ -99,7 +105,7 @@ fastify.post("/api/webhooks/ordersCreate", async (request, reply) => {
 
 export const fastifyStart = async () => {
   try {
-    await fastify.listen({ port: 3000 });
+    await fastify.listen({ port: 3000, host: "0.0.0.0" });
     const address = fastify.server.address();
     const port = typeof address === "string" ? address : address?.port;
     console.log(`fastify server is running on port:${port}`);

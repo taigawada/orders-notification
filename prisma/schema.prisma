@@ -1,0 +1,39 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model SalesResults {
+  variantId      String          @id
+  displayName    String
+  productId      String
+  productTitle   String
+  variantOptions VariantOption[]
+  updatedAt      DateTime        @updatedAt
+  currentSold    Int
+}
+
+model VariantOption {
+  id    String @id @default(uuid())
+  name  String
+  value String
+
+  SalesResults          SalesResults @relation(fields: [SalesResultsVariantId], references: [variantId], onDelete: Cascade)
+  SalesResultsVariantId String
+}
+
+model TodaySales {
+  orderId   String
+  variantId String
+  quantity  Int
+  createdAt DateTime @default(now())
+
+  @@id([orderId, variantId])
+}
