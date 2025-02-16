@@ -101,4 +101,4 @@ jobs:
       - name: Pull Image And Serve
         run: |
           cd $HOST_PWD
-          github-actions.sh
+          bash github-actions.sh
