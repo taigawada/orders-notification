@@ -1,6 +1,6 @@
 {
   "name": "shopify_order_notification",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "app/index.ts",
   "author": "Taiga Wada",
   "license": "MIT",
