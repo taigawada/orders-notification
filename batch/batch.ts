@@ -287,6 +287,11 @@ export async function batch() {
   const yesterday = sub(today, { days: 1 });
 
   console.log(`[${now}] batch process started`);
+  const { id: batchProcessId } = await prisma.batchProcess.create({
+    data: {
+      startedAt: now,
+    },
+  });
 
   const url = await getAllOrders(today);
   const orders = await parseOrdersJsonL(url);
@@ -302,8 +307,15 @@ export async function batch() {
     ]);
   }
   await deleteLessThanYesterdaySales(today);
-
-  console.log(
-    `[${convertToTimeZone(new Date(), { timeZone: "Asia/Tokyo" })}] batch process finished`,
-  );
+  const finishedAt = convertToTimeZone(new Date(), { timeZone: "Asia/Tokyo" });
+  await prisma.batchProcess.update({
+    where: {
+      id: batchProcessId,
+    },
+    data: {
+      finishedAt,
+      isSuccess: true,
+    },
+  });
+  console.log(`[${finishedAt}] batch process finished`);
 }

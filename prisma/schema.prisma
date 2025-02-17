@@ -37,3 +37,10 @@ model TodaySales {
 
   @@id([orderId, variantId])
 }
+
+model BatchProcess {
+  id         String    @id @default(uuid())
+  startedAt  DateTime
+  finishedAt DateTime?
+  isSuccess  Boolean   @default(false)
+}

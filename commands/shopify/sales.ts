@@ -8,8 +8,6 @@ import {
 import { Graphql } from "../../graphql-codegen";
 import { isString } from "lodash";
 import prisma from "../../utils/prisma";
-import { convertToTimeZone } from "date-fns-timezone";
-import { startOfDay } from "date-fns";
 
 export const data = new SlashCommandBuilder()
   .setName("sales")
@@ -85,8 +83,24 @@ async function getCurrentSales(productId: string, variantId?: string) {
       },
     });
     const result = structuredClone(prevSales);
-    const now = convertToTimeZone(new Date(), { timeZone: "Asia/Tokyo" });
-    const today = startOfDay(now);
+    const latestBatchProcess = await prisma.batchProcess.findFirst({
+      where: {
+        AND: [
+          { isSuccess: true },
+          {
+            finishedAt: {
+              not: null,
+            },
+          },
+        ],
+      },
+      orderBy: {
+        finishedAt: "desc",
+      },
+    });
+    if (!latestBatchProcess) {
+      return null;
+    }
     await prisma.$transaction(async (tx) => {
       await Promise.all(
         prevSales.map(async ({ variantId }) => {
@@ -94,7 +108,7 @@ async function getCurrentSales(productId: string, variantId?: string) {
             where: {
               variantId,
               createdAt: {
-                gte: today,
+                gte: latestBatchProcess.finishedAt!,
               },
             },
           });
