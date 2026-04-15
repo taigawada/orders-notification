@@ -1,10 +1,21 @@
 import { createTodaySales } from "./orders_create";
-import { format } from "date-fns";
-import { convertToTimeZone } from "date-fns-timezone";
+import prisma from "../utils/prisma";
+
+jest.mock("../utils/prisma", () => ({
+  __esModule: true,
+  default: {
+    todaySales: {
+      createMany: jest.fn().mockResolvedValue({ count: 2 }),
+    },
+  },
+}));
+
+beforeEach(() => {
+  jest.clearAllMocks();
+});
 
 test("createTodaysSales", async () => {
-  const S = "0123456789";
-  const orderId = `${S.slice(1, 10)[Math.floor(Math.random() * 9)]}${[...Array(12)].map(() => S[Math.floor(Math.random() * 10)]).join("")}`;
+  const orderId = "1234567890123";
   const samplePayload = {
     id: parseInt(orderId),
     admin_graphql_api_id: `gid://shopify/Order/${orderId}`,
@@ -21,10 +32,7 @@ test("createTodaysSales", async () => {
     confirmation_number: null,
     confirmed: false,
     contact_email: "jon@example.com",
-    created_at: format(
-      convertToTimeZone(new Date(), { timeZone: "Asia/Tokyo" }),
-      "yyyy-MM-dd'T'HH:mm'Z+09:00'",
-    ),
+    created_at: "2025-02-09T18:20:31+09:00",
     currency: "JPY",
     current_shipping_price_set: {
       shop_money: {
@@ -440,4 +448,20 @@ test("createTodaysSales", async () => {
     returns: [],
   };
   await createTodaySales(samplePayload);
+
+  expect(prisma.todaySales.createMany).toHaveBeenCalledTimes(1);
+  expect(prisma.todaySales.createMany).toHaveBeenCalledWith({
+    data: [
+      {
+        orderId: "gid://shopify/Order/1234567890123",
+        variantId: "gid://shopify/ProductVariant/42443672027389",
+        quantity: 1,
+      },
+      {
+        orderId: "gid://shopify/Order/1234567890123",
+        variantId: "gid://shopify/ProductVariant/42466709700861",
+        quantity: 1,
+      },
+    ],
+  });
 });
